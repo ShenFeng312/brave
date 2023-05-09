@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 The OpenZipkin Authors
+ * Copyright 2013-2023 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,12 +18,13 @@ import brave.internal.Nullable;
 import brave.rpc.RpcClientHandler;
 import brave.rpc.RpcClientRequest;
 import brave.rpc.RpcServerHandler;
-import java.util.function.BiConsumer;
 import org.apache.dubbo.rpc.Result;
+
+import java.util.function.BiConsumer;
 
 abstract class FinishSpan implements BiConsumer<Object, Throwable> {
   static void finish(TracingFilter filter,
-    DubboRequest request, @Nullable Result result, @Nullable Throwable error, Span span) {
+                     DubboRequest request, @Nullable Result result, @Nullable Throwable error, Span span) {
     if (request instanceof RpcClientRequest) {
       filter.clientHandler.handleReceive(
         new DubboClientResponse((DubboClientRequest) request, result, error), span);
@@ -45,8 +46,10 @@ abstract class FinishSpan implements BiConsumer<Object, Throwable> {
   final Result result;
 
   FinishSpan(Span span, Result result) {
-    if (span == null) throw new NullPointerException("span == null");
-    if (result == null) throw new NullPointerException("result == null");
+    if (span == null)
+      throw new NullPointerException("span == null");
+    if (result == null)
+      throw new NullPointerException("result == null");
     this.span = span;
     this.result = result;
   }
@@ -62,7 +65,8 @@ abstract class FinishSpan implements BiConsumer<Object, Throwable> {
       this.request = request;
     }
 
-    @Override public void accept(@Nullable Object unused, @Nullable Throwable error) {
+    @Override
+    public void accept(@Nullable Object unused, @Nullable Throwable error) {
       clientHandler.handleReceive(new DubboClientResponse(request, result, error), span);
     }
   }
@@ -78,7 +82,8 @@ abstract class FinishSpan implements BiConsumer<Object, Throwable> {
       this.request = request;
     }
 
-    @Override public void accept(@Nullable Object unused, @Nullable Throwable error) {
+    @Override
+    public void accept(@Nullable Object unused, @Nullable Throwable error) {
       serverHandler.handleSend(new DubboServerResponse(request, result, error), span);
     }
   }

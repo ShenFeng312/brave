@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 The OpenZipkin Authors
+ * Copyright 2013-2023 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,12 +13,13 @@
  */
 package brave.dubbo;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.junit.Test;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class DubboClientRequestTest {
   Invoker invoker = mock(Invoker.class);
   Invocation invocation = mock(Invocation.class);
-  URL url = URL.valueOf("dubbo://localhost:6666?scope=remote&interface=brave.dubbo.GreeterService");
+  URL url = URL.valueOf("dubbo://localhost:6666?scope=remote&interface=GreeterService");
   Map<String, String> attachments = new LinkedHashMap<>();
   DubboClientRequest request = new DubboClientRequest(invoker, invocation, attachments);
 
@@ -36,7 +37,7 @@ public class DubboClientRequestTest {
     when(invoker.getUrl()).thenReturn(url);
 
     assertThat(request.service())
-      .isEqualTo("brave.dubbo.GreeterService");
+      .isEqualTo("GreeterService");
   }
 
   @Test public void method() {

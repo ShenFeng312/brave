@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 The OpenZipkin Authors
+ * Copyright 2013-2023 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,7 +13,6 @@
  */
 package brave.dubbo;
 
-import java.io.IOException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -22,6 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -75,10 +76,10 @@ public class DubboParserTest {
 
   @Test public void service() {
     when(invoker.getUrl()).thenReturn(url);
-    when(url.getServiceInterface()).thenReturn("brave.dubbo.GreeterService");
+    when(url.getServiceInterface()).thenReturn("GreeterService");
 
     assertThat(DubboParser.service(invoker))
-        .isEqualTo("brave.dubbo.GreeterService");
+        .isEqualTo("GreeterService");
   }
 
   @Test public void service_nullUrl() {
@@ -121,7 +122,18 @@ public class DubboParserTest {
         .isEqualTo("LIMIT_EXCEEDED_EXCEPTION");
     assertThat(DubboParser.errorCode(new RpcException(8)))
         .isEqualTo("TIMEOUT_TERMINATE");
+
     assertThat(DubboParser.errorCode(new RpcException(9)))
-        .isNull(); // This test will drift with a new error code name if Dubbo adds one.
+      .isEqualTo("REGISTRY_EXCEPTION");
+    assertThat(DubboParser.errorCode(new RpcException(10)))
+      .isEqualTo("ROUTER_CACHE_NOT_BUILD");
+    assertThat(DubboParser.errorCode(new RpcException(11)))
+      .isEqualTo("METHOD_NOT_FOUND");
+    assertThat(DubboParser.errorCode(new RpcException(12)))
+      .isEqualTo("VALIDATION_EXCEPTION");
+    assertThat(DubboParser.errorCode(new RpcException(13)))
+      .isNull();// This test will drift with a new error code name if Dubbo adds one
+
+
   }
 }

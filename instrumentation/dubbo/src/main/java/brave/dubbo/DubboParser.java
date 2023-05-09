@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 The OpenZipkin Authors
+ * Copyright 2013-2023 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,17 +16,18 @@ package brave.dubbo;
 import brave.Span;
 import brave.internal.Nullable;
 import brave.internal.Platform;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.net.InetSocketAddress;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.InetSocketAddress;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 final class DubboParser {
   static final Map<Integer, String> ERROR_CODE_NUMBER_TO_NAME = errorCodeNumberToName();
@@ -44,9 +45,9 @@ final class DubboParser {
     Map<Integer, String> result = new LinkedHashMap<>();
     for (Field field : RpcException.class.getDeclaredFields()) {
       if (Modifier.isPublic(field.getModifiers())
-          && Modifier.isStatic(field.getModifiers())
-          && Modifier.isFinal(field.getModifiers())
-          && field.getType() == int.class
+        && Modifier.isStatic(field.getModifiers())
+        && Modifier.isFinal(field.getModifiers())
+        && field.getType() == int.class
       ) {
         try {
           result.put((Integer) field.get(null), field.getName());
@@ -70,7 +71,8 @@ final class DubboParser {
    * <p>Like {@link RpcUtils#getMethodName(Invocation)}, except without re-reading fields or
    * returning an unhelpful "$invoke" method name.
    */
-  @Nullable static String method(Invocation invocation) {
+  @Nullable
+  static String method(Invocation invocation) {
     String methodName = invocation.getMethodName();
     if ("$invoke".equals(methodName) || "$invokeAsync".equals(methodName)) {
       Object[] arguments = invocation.getArguments();
@@ -88,9 +90,11 @@ final class DubboParser {
    *
    * <p>This was chosen as the {@link URL#getServiceName() service name} is deprecated for it.
    */
-  @Nullable static String service(Invoker<?> invoker) {
+  @Nullable
+  static String service(Invoker<?> invoker) {
     URL url = invoker.getUrl();
-    if (url == null) return null;
+    if (url == null)
+      return null;
     String service = url.getServiceInterface();
     return service != null && !service.isEmpty() ? service : null;
   }
@@ -98,10 +102,11 @@ final class DubboParser {
   static boolean parseRemoteIpAndPort(Span span) {
     RpcContext rpcContext = RpcContext.getContext();
     InetSocketAddress remoteAddress = rpcContext.getRemoteAddress();
-    if (remoteAddress == null) return false;
+    if (remoteAddress == null)
+      return false;
     return span.remoteIpAndPort(
-        Platform.get().getHostString(remoteAddress),
-        remoteAddress.getPort()
+      Platform.get().getHostString(remoteAddress),
+      remoteAddress.getPort()
     );
   }
 
@@ -109,7 +114,8 @@ final class DubboParser {
    * On occasion, (roughly once a year) Dubbo adds more error code numbers. When this occurs, do not
    * use the symbol name, in the switch statement, as it will affect the minimum version.
    */
-  @Nullable static String errorCode(Throwable error) {
+  @Nullable
+  static String errorCode(Throwable error) {
     if (error instanceof RpcException) {
       return ERROR_CODE_NUMBER_TO_NAME.get(((RpcException) error).getCode());
     }

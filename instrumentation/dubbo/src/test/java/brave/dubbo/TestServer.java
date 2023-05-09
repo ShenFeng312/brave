@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2020 The OpenZipkin Authors
+ * Copyright 2013-2023 The OpenZipkin Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -17,10 +17,6 @@ import brave.internal.Platform;
 import brave.propagation.Propagation;
 import brave.propagation.TraceContext.Extractor;
 import brave.propagation.TraceContextOrSamplingFlags;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.Constants;
@@ -30,10 +26,16 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 class TestServer {
   final BlockingQueue<TraceContextOrSamplingFlags> requestQueue = new LinkedBlockingQueue<>();
   final Extractor<Map<String, String>> extractor;
   final ServiceConfig<GenericService> service;
+
   final String linkLocalIp;
 
   TestServer(Propagation.Factory propagationFactory, ApplicationConfig application) {
@@ -47,7 +49,11 @@ class TestServer {
     service = new ServiceConfig<>();
     service.setApplication(application);
     service.setRegistry(new RegistryConfig(RegistryConfig.NO_AVAILABLE));
-    service.setProtocol(new ProtocolConfig("dubbo", PickUnusedPort.get()));
+    service.setProtocol(new ProtocolConfig("dubbo",PickUnusedPort.get()));
+  }
+
+  public void initService() {
+
     service.setInterface(GreeterService.class);
     service.setRef((method, parameterTypes, args) -> {
       requestQueue.add(extractor.extract(RpcContext.getContext().getAttachments()));
@@ -55,9 +61,6 @@ class TestServer {
     });
   }
 
-  ApplicationConfig application() {
-    return service.getApplication();
-  }
 
   void start() {
     service.export();
