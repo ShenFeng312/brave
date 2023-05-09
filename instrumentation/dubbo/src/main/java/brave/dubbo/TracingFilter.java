@@ -26,6 +26,7 @@ import brave.rpc.RpcResponse;
 import brave.rpc.RpcResponseParser;
 import brave.rpc.RpcServerHandler;
 import brave.rpc.RpcTracing;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -119,7 +120,7 @@ public final class TracingFilter implements Filter {
     Span span;
     DubboRequest request;
     if (kind.equals(Kind.CLIENT)) {
-      Map<String, String> attachments = invocation.getAttachments();
+      Map<String, String> attachments = getVersion() >= 3000000 ? invocation.getAttachments():RpcContext.getContext().getAttachments();
       DubboClientRequest clientRequest = new DubboClientRequest(invoker, invocation,
         attachments);
       request = clientRequest;
@@ -155,5 +156,9 @@ public final class TracingFilter implements Filter {
         FinishSpan.finish(this, request, result, error, span);
       scope.close();
     }
+  }
+
+  private int getVersion(){
+    return Version.getIntVersion(Version.getVersion());
   }
 }
